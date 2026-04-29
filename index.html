@@ -126,7 +126,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .result-card-head{padding:.65rem 1rem;background:var(--card2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem}
 .result-card-title{font-family:'Cormorant Garamond',serif;font-size:.7rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
 .result-card-body{padding:.9rem 1rem}
-.result-text{font-size:.8rem;line-height:1.8;color:var(--text);white-space:pre-wrap;word-break:break-word}
+.result-text{font-size:.8rem;line-height:1.8;color:var(--text);white-space:pre-wrap;word-break:break-word;overflow:visible}
 
 /* CHAR BADGE */
 .char-badge{font-size:.65rem;padding:.16rem .42rem;border-radius:3px;font-weight:500}
@@ -596,7 +596,6 @@ function buildPrompt(title, description, customInstructions) {
     'Descrição e Ficha Técnica: ' + description.slice(0, 4000),
   ].join('\n');
 
-  // ── INSTRUÇÕES PERSONALIZADAS (sobrescreve o padrão quando preenchido) ──
   if (customInstructions && customInstructions.trim()) {
     return [
       'Você é um Especialista em SEO, GEO e Copywriter especializado em moda e semijoias de luxo.',
@@ -619,92 +618,79 @@ function buildPrompt(title, description, customInstructions) {
     ].join('\n');
   }
 
-  // ── PROMPT PADRÃO COMPLETO — modelo Loja de Semijoia ──
-  return [
-    'Você é um Especialista em SEO, GEO e Copywriter especializado em moda e semijoias de luxo.',
-    'Com base nos dados extraídos do site do fornecedor, crie o cadastro completo e otimizado para SEO do e-commerce "Loja de Semijoia".',
-    '',
-    '═══════════════════════════════════════',
-    'REGRAS OBRIGATÓRIAS',
-    '═══════════════════════════════════════',
-    '1. Texto 100% original, persuasivo, SEM limite de caracteres — quanto mais completo, melhor para SEO.',
-    '2. Linguagem acolhedora, elegante e voltada ao consumidor final (B2C).',
-    '3. Use negrito (**texto**) nos pontos de destaque, benefícios e palavras-chave importantes.',
-    '4. NUNCA invente especificações técnicas. Use APENAS dados confirmados nos dados do fornecedor.',
-    '5. Se algum dado técnico NÃO for encontrado (medida, banho, material, peso, pedra, etc.),',
-    '   escreva exatamente assim: [INFORMAR MANUALMENTE] — em maiúsculo e entre colchetes.',
-    '6. Siga RIGOROSAMENTE a estrutura abaixo. Não omita nenhuma seção.',
-    '7. As seções "Cuidados", "Garantia" e "Fotos Ilustrativas" são FIXAS — copie-as exatamente como estão abaixo.',
-    '',
-    '═══════════════════════════════════════',
-    'ESTRUTURA OBRIGATÓRIA DA DESCRIÇÃO',
-    '═══════════════════════════════════════',
-    '',
-    '--- BLOCO 1: ABERTURA ---',
-    'Uma frase de abertura chamativa e emocional convidando o cliente a celebrar, se presentear ou presentear alguém.',
-    'Exemplo: "Celebre o amor eterno com o [Nome do Produto] da Loja de Semijoias!"',
-    '',
-    '--- BLOCO 2: DESCRIÇÃO PRINCIPAL (mínimo 3 parágrafos) ---',
-    'Parágrafo 1: Apresente o produto com detalhes visuais e emocionais. Descreva o design, estilo, ocasiões de uso.',
-    'Parágrafo 2: Destaque as pedras, acabamentos, brilho e o que torna a peça especial.',
-    'Parágrafo 3: Fale sobre a qualidade dos materiais, durabilidade, banho e proteção antialérgica.',
-    'Use **negrito** nas palavras-chave de SEO e nos principais benefícios.',
-    '',
-    '--- BLOCO 3: DETALHES DA SEMIJOIA ---',
-    'Título: **Detalhes da Sua Semijoia**',
-    'Liste em tópicos todos os dados técnicos encontrados. Para cada dado não encontrado, use [INFORMAR MANUALMENTE].',
-    'Modelo dos tópicos:',
-    '- Medidas: [INFORMAR MANUALMENTE]',
-    '- Comprimento do Colar/Corrente: [INFORMAR MANUALMENTE]',
-    '- Peso Aproximado: [INFORMAR MANUALMENTE]',
-    '- Pedras: [dado do fornecedor ou INFORMAR MANUALMENTE]',
-    '- Material: [dado do fornecedor ou INFORMAR MANUALMENTE]',
-    '- Banho: [dado do fornecedor ou INFORMAR MANUALMENTE]',
-    '- Semijoia Hipoalérgica (não causa alergia)',
-    '- Produto livre de níquel',
-    '- Fabricação Nacional de Extrema Qualidade',
-    '',
-    '--- BLOCO 4: ENCONTRE O PRODUTO PERFEITO ---',
-    'Escreva um parágrafo mencionando a categoria do produto (ex: conjuntos, anéis, colares, brincos, etc.).',
-    'Modelo: "A Loja de Semijoia oferece uma grande variedade de [CATEGORIA ADEQUADA AO PRODUTO] em diferentes estilos, materiais e cores. Explore nossa coleção e encontre o [TIPO DE PEÇA] perfeito para você!"',
-    '',
-    '--- BLOCO 5: COMPRE COM SEGURANÇA ---',
-    'Escreva exatamente:',
-    '**Compre com segurança e tranquilidade:**',
-    'A Loja de Semijoia é uma loja online confiável que oferece produtos de alta qualidade. Garantimos a sua satisfação com a sua compra.',
-    '',
-    '--- BLOCO 6: CALL TO ACTION (CTA) ---',
-    'Escreva um call to action persuasivo e específico para este produto, incentivando a compra imediata.',
-    'Exemplo: "[Nome completo do produto] é uma peça única e especial que você vai adorar. **Compre o seu agora mesmo!**"',
-    '',
-    '--- BLOCO 7: CUIDADOS COM SUA JOIA (FIXO — copie exatamente) ---',
+  // Seções fixas que sempre aparecem no final
+  const cuidados = [
     '**Cuidados Com Sua Joia**',
     '',
     '- Evite exposição a produtos químicos abrasivos. Guarde sua joia em local limpo, seco e protegido da luz e mudanças de temperatura quando não estiver em uso;',
     '- Use uma flanela limpa e seca para polir, preservando o brilho duradouro, sem a necessidade de produtos polidores de metal;',
     '- Ao realizar trabalhos domésticos ou manuais, é recomendável retirar sua joia para prevenir desgastes, batidas e arranhões;',
     '- Remova os acessórios antes de tomar banho, entrar no mar/piscina ou praticar atividade física, pois o suor pode comprometer o banho das peças.',
-    '',
-    '--- BLOCO 8: GARANTIA (FIXO — copie exatamente) ---',
+  ].join('\n');
+
+  const garantia = [
     '**Garantia**',
     '',
     '- 12 meses de garantia caso a peça descasque (prazo contado a partir da data de entrega do produto);',
     '- Sua peça escureceu? Fique tranquila, acesse o link e aprenda o procedimento para limpá-la;',
-    '- Não existe garantia caso a peça arrebente ou sofra riscos ocasionados pelo uso, porém, se precisar, entre em contato com nossa equipe aqui. Lembrando, oferecemos assistência somente para peças compradas em nosso site Loja de Semijoia.',
+    '- Não existe garantia caso a peça arrebente ou sofra riscos ocasionados pelo uso, porém, se precisar, entre em contato com nossa equipe. Lembrando, oferecemos assistência somente para peças compradas em nosso site Loja de Semijoia.',
+  ].join('\n');
+
+  const fotosAviso = 'As fotos ilustrativas representam com fidelidade o produto físico em sua forma e cor. Poderá haver diferença na cor de sua visualização, dependendo do dispositivo que utiliza, como smartphones ou monitores com a tela descalibrada ou com configurações variadas.';
+
+  return [
+    'Você é um Especialista em SEO, GEO e Copywriter especializado em moda e semijoias de luxo.',
+    'Com base nos dados extraídos do site do fornecedor, crie o cadastro completo e otimizado para SEO do e-commerce "Loja de Semijoia".',
     '',
-    '--- BLOCO 9: FOTOS ILUSTRATIVAS (FIXO — copie exatamente) ---',
-    'As fotos ilustrativas representam com fidelidade o produto físico em sua forma e cor. Poderá haver diferença na cor de sua visualização, dependendo do dispositivo que utiliza, como smartphones ou monitores com a tela descalibrada ou com configurações variadas.',
+    'REGRAS OBRIGATÓRIAS:',
+    '1. Texto 100% original, persuasivo, SEM limite de caracteres.',
+    '2. Linguagem acolhedora, elegante e voltada ao consumidor final (B2C).',
+    '3. Use **negrito** nos pontos de destaque e palavras-chave de SEO.',
+    '4. NUNCA invente especificações técnicas. Use APENAS dados confirmados nos dados do fornecedor.',
+    '5. Se algum dado técnico NÃO for encontrado, escreva: [INFORMAR MANUALMENTE]',
+    '6. NÃO inclua marcadores, títulos de seção, rótulos como "Bloco 1", "Abertura", "---" ou qualquer estrutura visível no texto final.',
+    '   O texto deve fluir naturalmente, como numa página de produto real de e-commerce.',
     '',
-    '═══════════════════════════════════════',
-    'FORMATO DE RETORNO',
-    '═══════════════════════════════════════',
-    'RETORNE EXATAMENTE neste formato sem nenhum texto adicional fora dele:',
+    'RETORNE EXATAMENTE neste formato — sem texto fora dele:',
     '',
     '[TÍTULO]',
     'Título SEO de 50-60 caracteres. Estrutura: Tipo de Peça + Detalhe Principal + Material/Banho. Title Case.',
     '',
     '[DESCRIÇÃO]',
-    'Descrição completa seguindo todos os 9 blocos acima, com negrito em **texto**, sem limite de tamanho.',
+    'Escreva a descrição completa nesta ordem, sem títulos de seção intermediários, apenas o texto corrido com parágrafos e tópicos quando necessário:',
+    '',
+    'a) Uma frase de abertura emocional e chamativa.',
+    '',
+    'b) Mínimo 3 parágrafos descrevendo o produto: design, ocasiões de uso, pedras/brilho, qualidade dos materiais, durabilidade e proteção antialérgica. Use **negrito** nas palavras-chave.',
+    '',
+    'c) Seção "**Detalhes da Sua Semijoia**" com tópicos:',
+    '   - Medidas: [dado ou INFORMAR MANUALMENTE]',
+    '   - Comprimento do Colar/Corrente: [dado ou INFORMAR MANUALMENTE]',
+    '   - Peso Aproximado: [dado ou INFORMAR MANUALMENTE]',
+    '   - Pedras: [dado ou INFORMAR MANUALMENTE]',
+    '   - Material: [dado ou INFORMAR MANUALMENTE]',
+    '   - Banho: [dado ou INFORMAR MANUALMENTE]',
+    '   - Semijoia Hipoalérgica (não causa alergia)',
+    '   - Produto livre de níquel',
+    '   - Fabricação Nacional de Extrema Qualidade',
+    '',
+    'd) Um parágrafo mencionando a variedade da categoria do produto na loja. Exemplo:',
+    '   "A Loja de Semijoia oferece uma grande variedade de [categoria do produto] em diferentes estilos, materiais e cores. Explore nossa coleção e encontre o [tipo de peça] perfeito para você!"',
+    '',
+    'e) O texto: "**Compre com segurança e tranquilidade:**',
+    'A Loja de Semijoia é uma loja online confiável que oferece produtos de alta qualidade. Garantimos a sua satisfação com a sua compra."',
+    '',
+    'f) Um call to action persuasivo e específico para este produto. Exemplo:',
+    '   "[Nome do produto] é uma peça única e especial que você vai adorar. **Compre o seu agora mesmo!**"',
+    '',
+    'g) Cole exatamente o seguinte bloco de cuidados:',
+    cuidados,
+    '',
+    'h) Cole exatamente o seguinte bloco de garantia:',
+    garantia,
+    '',
+    'i) Cole exatamente o seguinte aviso:',
+    fotosAviso,
     '',
     '[TAGS]',
     '10 palavras-chave SEO separadas por vírgula.',
@@ -773,11 +759,19 @@ async function callAI(title, description, customInstructions) {
    PARSE SEO RESPONSE
 ══════════════════════════════════════════ */
 function parseSEO(text) {
+  // Greedy match — captures everything between tags without cutting short
   const x = tag => {
-    const m = text.match(new RegExp('\\[' + tag + '\\]([\\s\\S]*?)(?=\\[\\w|$)', 'i'));
+    // Match from [TAG] to next [UPPERCASE_WORD] or end of string
+    const re = new RegExp('\\[' + tag + '\\]\\s*([\\s\\S]*?)(?=\\n\\[[A-ZÇÃÕÁÉÍÓÚ]{2,}\\]|$)', 'i');
+    const m = text.match(re);
     return m ? m[1].trim() : '';
   };
-  return { titulo: x('TÍTULO'), descricao: x('DESCRIÇÃO'), tags: x('TAGS'), categoria: x('CATEGORIA') };
+  return {
+    titulo:    x('TÍTULO'),
+    descricao: x('DESCRIÇÃO'),
+    tags:      x('TAGS'),
+    categoria: x('CATEGORIA'),
+  };
 }
 
 /* ══════════════════════════════════════════
