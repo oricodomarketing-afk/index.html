@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEO Extractor — Semijoia & Luxo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#080808; --bg2:#0f0f0f; --card:#111111; --card2:#161616;
+  --border:#222222; --border2:#2d2d2d;
+  --gold:#c9a84c; --gold2:#a8873d; --gold3:#e8c96a;
+  --gold-dim:rgba(201,168,76,0.12); --gold-glow:rgba(201,168,76,0.08);
+  --text:#f0f0f0; --text2:#a0a0a0; --text3:#606060;
+  --ok:#4caf8a; --err:#e05c5c;
+}
+@keyframes fadeUp  { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes spin    { to{transform:rotate(360deg)} }
+@keyframes shimmer { 0%,100%{opacity:.35} 50%{opacity:.8} }
+@keyframes glow    { 0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0)} 50%{box-shadow:0 0 22px 2px rgba(201,168,76,0.18)} }
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh}
+::-webkit-scrollbar{width:3px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:#2d2d2d;border-radius:2px}
+kbd{background:#1a1a1a;color:#888;border:1px solid #2a2a2a;padding:1px 5px;border-radius:3px;font-size:.68rem;font-family:monospace}
+code{color:var(--gold3);font-size:.68rem;font-family:monospace}
+
+/* LAYOUT */
+header{padding:1.2rem 2.5rem;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(201,168,76,.05) 0%,transparent 100%);display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:baseline;gap:.7rem}
+.logo-main{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--gold)}
+.logo-sub{font-family:'Cormorant Garamond',serif;font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;color:var(--text3)}
+.header-tag{font-family:'Cormorant Garamond',serif;font-size:.62rem;letter-spacing:.18em;color:var(--text3)}
+.header-tag span{color:var(--gold);font-size:.45rem;opacity:.5}
+
+.body{display:grid;grid-template-columns:44% 56%;min-height:calc(100vh - 62px)}
+.left{padding:1.75rem 1.5rem 1.75rem 2.5rem;border-right:1px solid var(--border);overflow-y:auto}
+.right{padding:1.75rem 2.5rem 1.75rem 1.5rem;overflow-y:auto}
+
+/* SECTION LABEL */
+.sec-label{font-family:'Cormorant Garamond',serif;font-size:.6rem;font-weight:500;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem}
+.sec-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--gold2),transparent);opacity:.3}
+
+/* FIELD BOX */
+.fbox{margin-bottom:1.1rem}
+.fbox-label{display:flex;align-items:center;gap:.4rem;font-size:.71rem;color:var(--text2);letter-spacing:.04em;margin-bottom:.4rem}
+.step-badge{background:var(--gold-dim);border:1px solid rgba(201,168,76,.3);color:var(--gold);border-radius:50%;width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:600;flex-shrink:0}
+.req{color:var(--err);font-size:.65rem}
+.hint{font-size:.64rem;color:var(--text3);line-height:1.6;padding:.4rem .6rem;background:var(--card2);border-radius:3px;border:1px solid var(--border);margin-bottom:.4rem}
+
+/* INPUTS */
+input[type=text],input[type=url],input[type=password],textarea,select{
+  width:100%;background:var(--card);border:1px solid var(--border2);color:var(--text);
+  font-family:'DM Sans',sans-serif;font-size:.8rem;padding:.58rem .85rem;border-radius:4px;
+  outline:none;transition:border .2s;resize:vertical}
+input[type=text]:focus,input[type=url]:focus,input[type=password]:focus,textarea:focus,select:focus{border-color:var(--gold2)}
+textarea.mono{font-family:monospace;font-size:.67rem}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23606060'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .7rem center;padding-right:2rem;cursor:pointer}
+
+/* BUTTONS */
+.btn-primary{width:100%;padding:.85rem;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#080808;border:none;border-radius:4px;font-family:'Cormorant Garamond',serif;font-size:.95rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.6rem;transition:all .2s;box-shadow:0 2px 18px rgba(201,168,76,.18)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 24px rgba(201,168,76,.28)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;background:rgba(201,168,76,.25)}
+.btn-primary.pulse{animation:glow 3s infinite}
+.btn-secondary{padding:.35rem .7rem;background:transparent;border:1px solid var(--border2);color:var(--text3);border-radius:3px;font-size:.68rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-secondary:hover{border-color:var(--gold2);color:var(--gold)}
+.btn-ghost{width:100%;padding:.4rem;background:transparent;border:1px solid var(--border2);color:var(--text3);border-radius:3px;font-size:.72rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;margin-top:.6rem}
+.btn-ghost:hover{border-color:var(--gold2);color:var(--gold)}
+.btn-copy{padding:.28rem .65rem;background:transparent;border:1px solid var(--border2);color:var(--text3);border-radius:3px;font-size:.67rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap}
+.btn-copy:hover{border-color:var(--gold2);color:var(--gold)}
+.btn-copy.copied{border-color:var(--ok);color:var(--ok)}
+.btn-save{padding:.45rem .6rem;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#080808;border:none;border-radius:3px;font-size:.68rem;font-weight:600;cursor:pointer;white-space:nowrap}
+
+/* PROVIDER BLOCK */
+.provider-block{margin-bottom:1.25rem;padding:.85rem;background:var(--card2);border:1px solid var(--border);border-radius:5px}
+.provider-block .block-title{font-family:'Cormorant Garamond',serif;font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem}
+.provider-tabs{display:flex;gap:.4rem;margin-bottom:.6rem}
+.provider-tab{flex:1;padding:.45rem .4rem;background:transparent;border:1px solid var(--border2);color:var(--text3);border-radius:3px;font-size:.7rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;font-weight:300}
+.provider-tab.active{background:var(--gold-dim);border-color:var(--gold2);color:var(--gold3);font-weight:500}
+.key-row{display:flex;gap:.35rem;align-items:center}
+.key-row input{flex:1;font-family:monospace;font-size:.72rem;padding:.45rem .6rem}
+.key-note{font-size:.62rem;color:var(--ok);margin-top:.3rem}
+.provider-note{font-size:.62rem;color:var(--text3);line-height:1.5;margin-top:.3rem}
+
+/* CUSTOM INSTR */
+.instr-toggle{width:100%;padding:.5rem .7rem;background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:4px;font-size:.72rem;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:space-between;transition:all .15s;text-align:left}
+.instr-toggle.active{background:var(--gold-dim);border-color:var(--gold2);color:var(--gold3)}
+.instr-panel{margin-top:.4rem;padding:.75rem;background:var(--card2);border:1px solid var(--border);border-radius:4px;display:none}
+.instr-panel.open{display:block}
+.instr-hint{font-size:.63rem;color:var(--text3);line-height:1.65;margin-bottom:.5rem}
+.instr-hint em{color:var(--text2)}
+.instr-actions{display:flex;gap:.4rem;margin-top:.45rem}
+
+/* STATUS */
+.status{margin-top:.85rem;padding:.58rem .85rem;background:var(--card2);border:1px solid var(--border);border-radius:4px;font-size:.75rem;color:var(--text3);display:flex;align-items:center;gap:.5rem;min-height:2.3rem;transition:all .3s}
+.status.active{border-color:var(--gold2);color:var(--gold3)}
+.status.success{border-color:var(--ok);color:var(--ok)}
+.status.error{border-color:var(--err);color:var(--err)}
+
+/* INFO BOX */
+.info-box{margin-top:.9rem;padding:.65rem;background:var(--card2);border:1px solid var(--border);border-radius:4px;font-size:.69rem;line-height:1.8;animation:fadeUp .3s ease both;display:none}
+.info-box .info-title{font-family:'Cormorant Garamond',serif;font-size:.57rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:.3rem}
+.info-box span{color:var(--text2)}
+
+/* SPINNER */
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(201,168,76,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0;vertical-align:middle}
+.spin.dark{border:2px solid rgba(0,0,0,.2);border-top-color:#080808}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:4rem 2rem;color:var(--text3)}
+.empty-icon{font-size:2.2rem;opacity:.18;margin-bottom:.75rem;font-family:'Playfair Display',serif}
+.empty-title{font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:.5rem}
+.empty-desc{font-size:.74rem;line-height:1.75;max-width:260px;margin:0 auto}
+
+/* SKELETONS */
+.skeleton{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:1rem;margin-bottom:1rem;display:none}
+.skeleton.show{display:block;animation:shimmer 1.6s ease infinite}
+.sk-line{height:9px;background:var(--border2);border-radius:3px;margin-bottom:.5rem}
+.sk-line.thin{height:7px;background:var(--border)}
+
+/* RESULT CARDS */
+.result-card{background:var(--card);border:1px solid var(--border);border-radius:6px;margin-bottom:1.1rem;overflow:hidden;animation:fadeUp .4s ease both;display:none}
+.result-card.show{display:block}
+.result-card-head{padding:.65rem 1rem;background:var(--card2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.result-card-title{font-family:'Cormorant Garamond',serif;font-size:.7rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+.result-card-body{padding:.9rem 1rem}
+.result-text{font-size:.8rem;line-height:1.8;color:var(--text);white-space:pre-wrap;word-break:break-word}
+
+/* CHAR BADGE */
+.char-badge{font-size:.65rem;padding:.16rem .42rem;border-radius:3px;font-weight:500}
+.char-badge.ok{background:rgba(76,175,138,.1);color:var(--ok);border:1px solid rgba(76,175,138,.3)}
+.char-badge.bad{background:rgba(224,92,92,.1);color:var(--err);border:1px solid rgba(224,92,92,.3)}
+
+/* TAGS */
+.tags-wrap{display:flex;flex-wrap:wrap;gap:.4rem}
+.tag{padding:.2rem .6rem;background:var(--gold-dim);border:1px solid rgba(201,168,76,.2);border-radius:20px;font-size:.7rem;color:var(--gold3)}
+
+/* IMAGES */
+.images-section{margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);display:none;animation:fadeUp .4s ease .25s both}
+.images-section.show{display:block}
+.images-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem}
+.images-count{font-size:.66rem;color:var(--text3);font-family:'Cormorant Garamond',serif;font-style:italic}
+.btn-dl-all{padding:.44rem .9rem;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#080808;border:none;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;box-shadow:0 2px 10px rgba(201,168,76,.18);transition:all .2s}
+.btn-dl-all:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(201,168,76,.28)}
+.images-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:.7rem}
+.img-card{background:var(--card);border:1px solid var(--border);border-radius:5px;overflow:hidden;transition:all .2s;animation:fadeUp .3s ease both}
+.img-card:hover{border-color:var(--gold2);transform:translateY(-2px);box-shadow:0 4px 14px var(--gold-glow)}
+.img-thumb{width:100%;height:130px;background:#090909;display:flex;align-items:center;justify-content:center;cursor:zoom-in;overflow:hidden}
+.img-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.img-card:hover .img-thumb img{transform:scale(1.07)}
+.img-info{padding:.38rem .5rem;background:var(--card2);border-top:1px solid var(--border)}
+.img-fname{font-size:.58rem;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:monospace;margin-bottom:.26rem}
+.btn-dl-one{width:100%;padding:.25rem;background:transparent;border:1px solid var(--border2);color:var(--text3);border-radius:3px;font-size:.62rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-dl-one:hover{border-color:var(--gold2);color:var(--gold)}
+
+/* RESPONSIVE */
+@media(max-width:860px){
+  .body{grid-template-columns:1fr}
+  .left{border-right:none;border-bottom:1px solid var(--border)}
+  header{padding:1rem 1.25rem}
+  .left,.right{padding:1.25rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-main">SEO Extractor</span>
+    <span class="logo-sub">Semijoia & Luxo</span>
+  </div>
+  <div class="header-tag">
+    <span>◆ </span>Extração Inteligente<span> ◆</span>
+  </div>
+</header>
+
+<div class="body">
+
+  <!-- ═══ LEFT ═══ -->
+  <div class="left">
+
+    <!-- PROVIDER -->
+    <div class="provider-block">
+      <div class="block-title">Modelo de IA</div>
+      <div class="provider-tabs">
+        <button class="provider-tab active" id="tab-openai" onclick="setProvider('openai')">✨ GPT-4o</button>
+        <button class="provider-tab" id="tab-claude" onclick="setProvider('claude')">🤖 Claude</button>
+      </div>
+      <div id="openai-key-area">
+        <div style="font-size:.63rem;color:var(--text3);margin-bottom:.35rem">
+          Chave em <span style="color:var(--gold)">platform.openai.com/api-keys</span>
+        </div>
+        <div class="key-row">
+          <input type="password" id="oaiKeyInput" placeholder="sk-proj-..." autocomplete="off">
+          <button onclick="toggleKey()" style="padding:0 .5rem;background:transparent;border:1px solid var(--border2);color:var(--text3);border-radius:3px;cursor:pointer;font-size:.8rem;height:35px" id="toggleKeyBtn">👁</button>
+          <button class="btn-save" onclick="saveKey()">Salvar</button>
+        </div>
+        <div class="key-note" id="keySaved" style="display:none">✓ Chave salva</div>
+      </div>
+      <div id="claude-note" class="provider-note" style="display:none">
+        Usa a API interna do Claude — funciona quando hospedado no claude.ai. Fora dele, use GPT-4o.
+      </div>
+    </div>
+
+    <div class="sec-label">Entrada de Dados</div>
+
+    <!-- STEP 1 -->
+    <div class="fbox">
+      <div class="fbox-label">
+        <span class="step-badge">1</span>
+        URL do Produto
+      </div>
+      <div class="hint">Opcional — usada para resolver caminhos relativos de imagens.</div>
+      <input type="url" id="productUrl" placeholder="https://zarpellon.com.br/produto/anel-flores-cristais">
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="fbox">
+      <div class="fbox-label">
+        <span class="step-badge">2</span>
+        Código-fonte HTML
+        <span class="req">*</span>
+      </div>
+      <div class="hint">
+        Abra a URL no browser → <kbd>Ctrl+U</kbd> → <kbd>Ctrl+A</kbd> → <kbd>Ctrl+C</kbd> → cole aqui.
+      </div>
+      <textarea class="mono" id="htmlInput" rows="5" placeholder="<!DOCTYPE html><html>..." oninput="updateHtmlCount()"></textarea>
+      <div id="htmlCount" style="font-size:.62rem;color:var(--text3);margin-top:.2rem;text-align:right;display:none"></div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="fbox">
+      <div class="fbox-label">
+        <span class="step-badge">3</span>
+        URLs das fotos do produto
+      </div>
+      <div class="hint">
+        Pressione <kbd>F12</kbd> → aba Elements → copie o <code>src</code> de cada foto, uma por linha.<br>
+        <span style="color:var(--gold);opacity:.8">Se preenchido, substitui a detecção automática.</span>
+      </div>
+      <textarea class="mono" id="imgUrlsInput" rows="3"
+        placeholder="https://cdn1.e-macro.com.br/.../800/foto1.jpg&#10;https://cdn1.e-macro.com.br/.../800/foto2.jpg"
+        oninput="updateImgCount()"></textarea>
+      <div id="imgUrlCount" style="font-size:.63rem;color:var(--gold);margin-top:.22rem;display:none"></div>
+    </div>
+
+    <!-- CUSTOM INSTRUCTIONS -->
+    <div class="fbox">
+      <button class="instr-toggle" id="instrToggle" onclick="toggleInstr()">
+        <span id="instrToggleLabel">
+          <span id="instrDot" style="color:var(--text3);margin-right:.35rem">✦</span>
+          Instruções para a descrição
+        </span>
+        <span id="instrArrow" style="font-size:.65rem;color:var(--text3)">▼</span>
+      </button>
+      <div class="instr-panel" id="instrPanel">
+        <div class="instr-hint">
+          Escreva exatamente como quer a descrição. Exemplo:<br>
+          <em>"Faça uma descrição com até 600 caracteres. Depois liste em tópicos: Cor, Material, Dimensões, Garantia."</em><br>
+          Deixe vazio para usar o formato padrão.
+        </div>
+        <textarea id="instrInput" rows="6"
+          placeholder="Exemplo:&#10;Faça uma descrição comercial com até 600 caracteres.&#10;&#10;Depois, em tópicos separados:&#10;- Cor:&#10;- Material:&#10;- Dimensões:&#10;- Cuidados:&#10;- Garantia:"
+          oninput="instrChanged()"></textarea>
+        <div class="instr-actions">
+          <button class="btn-save" onclick="saveInstr()">Salvar</button>
+          <button class="btn-secondary" id="instrClearBtn" onclick="clearInstr()" style="display:none">Usar padrão</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RUN -->
+    <button class="btn-primary pulse" id="runBtn" onclick="run()">
+      <span id="btnSpinner" class="spin dark" style="display:none"></span>
+      <span id="btnText">◆ Extrair e Gerar SEO</span>
+    </button>
+
+    <!-- STATUS -->
+    <div class="status" id="status">⟡ Preencha os campos para começar.</div>
+
+    <!-- INFO BOX -->
+    <div class="info-box" id="infoBox">
+      <div class="info-title">Dados Extraídos</div>
+      <div><span>Título:</span> <span id="infoTitle"></span></div>
+      <div><span>Descrição:</span> <span id="infoDesc"></span></div>
+      <div><span>Imagens:</span> <span id="infoImgs"></span></div>
+    </div>
+
+    <!-- RESET -->
+    <button class="btn-ghost" id="resetBtn" onclick="resetAll()" style="display:none">↺ Nova Busca</button>
+
+  </div><!-- /left -->
+
+  <!-- ═══ RIGHT ═══ -->
+  <div class="right" id="rightPanel">
+
+    <!-- EMPTY -->
+    <div class="empty" id="emptyState">
+      <div class="empty-icon">◈</div>
+      <p class="empty-title">Resultados aparecerão aqui</p>
+      <p class="empty-desc">Cole o HTML + URLs das fotos para receber título SEO, descrição, tags e categoria prontos para copiar.</p>
+    </div>
+
+    <!-- SKELETONS -->
+    <div class="skeleton" id="sk1"><div class="sk-line" style="width:55%"></div><div class="sk-line thin" style="width:90%"></div><div class="sk-line thin" style="width:70%;margin-top:.3rem"></div></div>
+    <div class="skeleton" id="sk2" style="animation-delay:.15s"><div class="sk-line" style="width:75%"></div><div class="sk-line thin" style="width:90%"></div><div class="sk-line thin" style="width:60%;margin-top:.3rem"></div></div>
+    <div class="skeleton" id="sk3" style="animation-delay:.3s"><div class="sk-line" style="width:40%"></div><div class="sk-line thin" style="width:80%"></div></div>
+
+    <!-- RESULT: TÍTULO -->
+    <div class="result-card" id="cardTitulo">
+      <div class="result-card-head">
+        <span class="result-card-title">◈ Título SEO</span>
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <span class="char-badge" id="charBadge">0 car.</span>
+          <button class="btn-copy" onclick="copyCard('tituloText',this)">Copiar</button>
+        </div>
+      </div>
+      <div class="result-card-body">
+        <div id="tituloText" style="font-family:'Playfair Display',serif;font-size:.98rem;font-weight:400;color:var(--gold3);line-height:1.5"></div>
+      </div>
+    </div>
+
+    <!-- RESULT: DESCRIÇÃO -->
+    <div class="result-card" id="cardDescricao" style="animation-delay:.1s">
+      <div class="result-card-head">
+        <span class="result-card-title">◈ Descrição Completa</span>
+        <button class="btn-copy" onclick="copyCard('descricaoText',this)">Copiar</button>
+      </div>
+      <div class="result-card-body">
+        <div class="result-text" id="descricaoText"></div>
+      </div>
+    </div>
+
+    <!-- RESULT: TAGS -->
+    <div class="result-card" id="cardTags" style="animation-delay:.15s">
+      <div class="result-card-head">
+        <span class="result-card-title">◈ Tags</span>
+        <button class="btn-copy" onclick="copyCard('tagsRaw',this)">Copiar</button>
+      </div>
+      <div class="result-card-body">
+        <div class="tags-wrap" id="tagsWrap"></div>
+        <div id="tagsRaw" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- RESULT: CATEGORIA -->
+    <div class="result-card" id="cardCategoria" style="animation-delay:.2s">
+      <div class="result-card-head">
+        <span class="result-card-title">◈ Categoria Sugerida</span>
+        <button class="btn-copy" onclick="copyCard('categoriaText',this)">Copiar</button>
+      </div>
+      <div class="result-card-body">
+        <div id="categoriaText" style="display:inline-flex;align-items:center;gap:.5rem;padding:.4rem 1rem;background:var(--gold-dim);border:1px solid rgba(201,168,76,.25);border-radius:4px;font-family:'Playfair Display',serif;font-size:1rem;color:var(--gold3)"></div>
+      </div>
+    </div>
+
+    <!-- IMAGES SECTION -->
+    <div class="images-section" id="imagesSection">
+      <div class="images-header">
+        <div>
+          <div class="sec-label">Imagens do Produto</div>
+          <div class="images-count" id="imagesCount"></div>
+        </div>
+        <button class="btn-dl-all" onclick="dlAll()">⬇ Baixar Todas</button>
+      </div>
+      <div class="images-grid" id="imagesGrid"></div>
+    </div>
+
+  </div><!-- /right -->
+
+</div><!-- /body -->
+
+<script>
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let currentProvider = localStorage.getItem('seo_provider') || 'openai';
+let foundImages = [];
+let busy = false;
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+(function init() {
+  // restore provider
+  setProvider(currentProvider, true);
+
+  // restore key
+  const k = localStorage.getItem('seo_oai_key') || '';
+  if (k) {
+    document.getElementById('oaiKeyInput').value = k;
+    document.getElementById('keySaved').style.display = 'block';
+  }
+
+  // restore custom instructions
+  const instr = localStorage.getItem('seo_custom_instr') || '';
+  if (instr) {
+    document.getElementById('instrInput').value = instr;
+    updateInstrToggle(true);
+  }
+})();
+
+/* ══════════════════════════════════════════
+   PROVIDER
+══════════════════════════════════════════ */
+function setProvider(p, silent) {
+  currentProvider = p;
+  if (!silent) localStorage.setItem('seo_provider', p);
+  document.getElementById('tab-openai').classList.toggle('active', p === 'openai');
+  document.getElementById('tab-claude').classList.toggle('active', p === 'claude');
+  document.getElementById('openai-key-area').style.display = p === 'openai' ? 'block' : 'none';
+  document.getElementById('claude-note').style.display    = p === 'claude' ? 'block' : 'none';
+}
+
+function toggleKey() {
+  const inp = document.getElementById('oaiKeyInput');
+  const btn = document.getElementById('toggleKeyBtn');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+function saveKey() {
+  const k = document.getElementById('oaiKeyInput').value.trim();
+  if (!k) return;
+  localStorage.setItem('seo_oai_key', k);
+  const el = document.getElementById('keySaved');
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 2500);
+}
+
+/* ══════════════════════════════════════════
+   INSTRUCTIONS
+══════════════════════════════════════════ */
+function toggleInstr() {
+  const panel = document.getElementById('instrPanel');
+  const arrow = document.getElementById('instrArrow');
+  const isOpen = panel.classList.toggle('open');
+  arrow.textContent = isOpen ? '▲' : '▼';
+  document.getElementById('instrToggle').classList.toggle('active', isOpen);
+}
+
+function instrChanged() {
+  const v = document.getElementById('instrInput').value;
+  updateInstrToggle(!!v.trim());
+}
+
+function updateInstrToggle(hasContent) {
+  const toggle = document.getElementById('instrToggle');
+  const dot    = document.getElementById('instrDot');
+  const clear  = document.getElementById('instrClearBtn');
+  const label  = document.getElementById('instrToggleLabel');
+  toggle.classList.toggle('active', hasContent);
+  dot.style.color = hasContent ? 'var(--gold)' : 'var(--text3)';
+  clear.style.display = hasContent ? 'inline-block' : 'none';
+  // update label
+  const active = label.querySelector('.instr-active');
+  if (hasContent && !active) {
+    label.insertAdjacentHTML('beforeend','<span class="instr-active" style="font-size:.6rem;color:var(--ok);margin-left:.4rem">(ativas)</span>');
+  } else if (!hasContent && active) {
+    active.remove();
+  }
+}
+
+function saveInstr() {
+  const v = document.getElementById('instrInput').value;
+  localStorage.setItem('seo_custom_instr', v);
+  updateInstrToggle(!!v.trim());
+}
+
+function clearInstr() {
+  document.getElementById('instrInput').value = '';
+  localStorage.setItem('seo_custom_instr', '');
+  updateInstrToggle(false);
+}
+
+/* ══════════════════════════════════════════
+   HTML COUNT
+══════════════════════════════════════════ */
+function updateHtmlCount() {
+  const n = document.getElementById('htmlInput').value.length;
+  const el = document.getElementById('htmlCount');
+  el.style.display = n > 0 ? 'block' : 'none';
+  el.textContent = n.toLocaleString('pt-BR') + ' caracteres';
+}
+
+function updateImgCount() {
+  const urls = parseManualUrls(document.getElementById('imgUrlsInput').value);
+  const el = document.getElementById('imgUrlCount');
+  el.style.display = urls.length > 0 ? 'block' : 'none';
+  el.textContent = '✓ ' + urls.length + ' URL(s) reconhecida(s)';
+}
+
+/* ══════════════════════════════════════════
+   PARSE HTML
+══════════════════════════════════════════ */
+function parseProductData(html, pageUrl) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  let baseUrl = '';
+  try { baseUrl = new URL(pageUrl).origin; } catch {}
+
+  let title =
+    doc.querySelector('h1')?.textContent?.trim() ||
+    doc.querySelector('meta[property="og:title"]')?.content?.trim() ||
+    doc.querySelector('title')?.textContent?.trim() || '';
+
+  const descParts = [], seen = new Set();
+  const addDesc = (txt) => {
+    const t = txt?.replace(/\s+/g,' ').trim();
+    if (t && t.length > 30 && !seen.has(t)) { seen.add(t); descParts.push(t.slice(0,600)); }
+  };
+  addDesc(doc.querySelector('meta[name="description"]')?.content);
+  addDesc(doc.querySelector('meta[property="og:description"]')?.content);
+  [
+    '[class*="descri"]','[class*="description"]','[class*="detalhe"]',
+    '[class*="especif"]','[class*="tecnic"]','[class*="ficha"]','[class*="product-info"]',
+    '[id*="descri"]','[id*="detalhe"]','[id*="especif"]','[id*="ficha"]'
+  ].forEach(sel => {
+    try { doc.querySelectorAll(sel).forEach(el => addDesc(el.textContent)); } catch {}
+  });
+  doc.querySelectorAll('script[type="application/ld+json"]').forEach(s => {
+    try { const o = JSON.parse(s.textContent); if (o.description) addDesc(o.description); } catch {}
+  });
+  if (!descParts.length) addDesc(doc.body?.textContent?.slice(0,800));
+  const description = [...new Set(descParts)].slice(0,5).join('\n\n');
+
+  const BAD  = ['logo','icon','sprite','banner','loading','placeholder','blank','pixel','tracking','arrow','.gif','button','btn','search','cart','user','avatar','star','rating','check','close','menu','social','facebook','instagram','whatsapp','youtube'];
+  const HIGH = ['/800/','/photos/','/produto/','/product/','/imagens/','/images/photos','e-macro.com','bling.com.br','mercos.com','nuvemshop','_800','_1200','_grande','_zoom','_full','_original','-800','-1200'];
+  const MED  = ['foto','photo','imag','gallery','principal','600','700','900','1000','1200','full','big','orig','large','zoom'];
+
+  const resolve = src => {
+    if (!src) return null;
+    src = src.trim().split(' ')[0];
+    if (src.startsWith('data:') || src.length < 10) return null;
+    if (src.startsWith('//'))   return 'https:' + src;
+    if (src.startsWith('/'))    return baseUrl + src;
+    if (src.startsWith('http')) return src;
+    return null;
+  };
+  const score = src => {
+    const l = src.toLowerCase();
+    if (BAD.some(k => l.includes(k)))  return -1;
+    if (HIGH.some(k => l.includes(k))) return 2;
+    if (MED.some(k => l.includes(k)))  return 1;
+    if (/\.(jpg|jpeg|png|webp)(\?|$)/i.test(l)) return 0;
+    return -1;
+  };
+  const scored = new Map();
+  const addImg = (...srcs) => {
+    for (const raw of srcs) {
+      const u = resolve(raw);
+      if (!u) continue;
+      const s = score(u);
+      if (s >= 0 && (!scored.has(u) || scored.get(u) < s)) scored.set(u,s);
+    }
+  };
+  doc.querySelectorAll('img').forEach(img => {
+    addImg(img.getAttribute('src'), img.getAttribute('data-src'),
+           img.getAttribute('data-lazy-src'), img.getAttribute('data-original'),
+           img.getAttribute('data-zoom-image'), img.getAttribute('data-large'));
+    (img.getAttribute('srcset')||img.getAttribute('data-srcset')||'').split(',').forEach(s => addImg(s.trim().split(/\s+/)[0]));
+  });
+  doc.querySelectorAll('source').forEach(src => {
+    (src.getAttribute('srcset')||'').split(',').forEach(s => addImg(s.trim().split(/\s+/)[0]));
+  });
+  doc.querySelectorAll('meta[property^="og:image"]').forEach(m => addImg(m.content));
+  doc.querySelectorAll('a[href]').forEach(a => {
+    const h = a.getAttribute('href')||'';
+    if (/\.(jpg|jpeg|png|webp)/i.test(h)) addImg(h);
+  });
+
+  const images = [...scored.entries()]
+    .filter(([,s]) => s >= 0)
+    .sort(([a,sa],[b,sb]) => sb-sa || a.localeCompare(b))
+    .map(([u]) => u).slice(0,40);
+
+  return { title, description, images };
+}
+
+function parseManualUrls(raw) {
+  return (raw||'').split(/[\n,]+/)
+    .map(s => s.trim())
+    .filter(s => s.startsWith('http') && /\.(jpg|jpeg|png|webp|gif)/i.test(s));
+}
+
+/* ══════════════════════════════════════════
+   BUILD PROMPT
+══════════════════════════════════════════ */
+function buildPrompt(title, description, customInstructions) {
+  const header = [
+    'Você é um Especialista em SEO, GEO e Copywriter especializado em moda e semijoias de luxo.',
+    'Com base nos dados extraídos do site do fornecedor, crie o cadastro completo otimizado para o e-commerce Loja de Semijoia.',
+    '',
+    'REGRAS GERAIS:',
+    '1. Texto persuasivo 100% original',
+    '2. Foco no consumidor final (B2C)',
+    '3. NUNCA invente especificações — use apenas o que estiver nos dados fornecidos',
+    '4. Todos os blocos devem ser preenchidos completamente',
+  ].join('\n');
+
+  const descBlock = (customInstructions && customInstructions.trim())
+    ? 'INSTRUÇÕES PERSONALIZADAS PARA A DESCRIÇÃO (siga à risca):\n' + customInstructions.trim()
+    : [
+        'INSTRUÇÕES PARA A DESCRIÇÃO:',
+        '**A Essência da Peça**',
+        'Dois parágrafos persuasivos sobre benefícios emocionais. Mínimo 150 palavras.',
+        '',
+        '**Dicas de Styling**',
+        'Um parágrafo sobre como e quando usar. Mínimo 50 palavras.',
+        '',
+        '**Especificações Técnicas**',
+        'Bullet points apenas com dados confirmados:',
+        '- Banho:',
+        '- Material:',
+        '- Pedra/Zircônia:',
+        '- Medidas:',
+        '- Peso:',
+        '- Hipoalergênico:',
+        '- Garantia:',
+      ].join('\n');
+
+  const descPlaceholder = (customInstructions && customInstructions.trim())
+    ? '(siga as instruções personalizadas acima)'
+    : 'Siga o formato de blocos especificado acima.';
+
+  const format = [
+    'RETORNE EXATAMENTE neste formato sem texto adicional:',
+    '',
+    '[TÍTULO]',
+    'Título SEO de 50-60 caracteres. Estrutura: Tipo de Peça + Detalhe Principal + Material/Banho. Title Case.',
+    '',
+    '[DESCRIÇÃO]',
+    descPlaceholder,
+    '',
+    '[TAGS]',
+    '10 palavras-chave separadas por vírgula.',
+    '',
+    '[CATEGORIA]',
+    'Categoria mais adequada (Anéis, Colares, Brincos, Pulseiras, Conjuntos, Pingentes, Berloques, Prata, Outros).',
+  ].join('\n');
+
+  const data = [
+    'DADOS EXTRAÍDOS DO FORNECEDOR:',
+    'Título: ' + title,
+    'Descrição e Ficha Técnica: ' + description.slice(0,3000),
+  ].join('\n');
+
+  return [header, '', descBlock, '', format, '', data].join('\n');
+}
+
+/* ══════════════════════════════════════════
+   AI CALL
+══════════════════════════════════════════ */
+async function callAI(title, description, customInstructions) {
+  const prompt = buildPrompt(title, description, customInstructions);
+
+  if (currentProvider === 'openai') {
+    const key = document.getElementById('oaiKeyInput').value.trim() || localStorage.getItem('seo_oai_key') || '';
+    if (!key) throw new Error('Informe sua OpenAI API Key no campo acima e clique Salvar.');
+
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        max_tokens: 4000,
+        temperature: 0.5,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      if (res.status === 429) throw new Error('RATE_LIMIT');
+      throw new Error('OpenAI: ' + (err?.error?.message || res.statusText));
+    }
+    const data = await res.json();
+    const text = data?.choices?.[0]?.message?.content;
+    if (!text) throw new Error('OpenAI retornou resposta vazia.');
+    return text;
+  }
+
+  // Claude (Anthropic)
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4000,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = typeof err?.error?.message === 'string' ? err.error.message : JSON.stringify(err);
+    if (msg.includes('exceeded_limit') || res.status === 429) throw new Error('RATE_LIMIT');
+    throw new Error('Claude: ' + msg);
+  }
+  const data = await res.json();
+  const text = data?.content?.[0]?.text;
+  if (!text) throw new Error('Resposta vazia da API.');
+  return text;
+}
+
+/* ══════════════════════════════════════════
+   PARSE SEO RESPONSE
+══════════════════════════════════════════ */
+function parseSEO(text) {
+  const x = tag => {
+    const m = text.match(new RegExp('\\[' + tag + '\\]([\\s\\S]*?)(?=\\[\\w|$)', 'i'));
+    return m ? m[1].trim() : '';
+  };
+  return { titulo: x('TÍTULO'), descricao: x('DESCRIÇÃO'), tags: x('TAGS'), categoria: x('CATEGORIA') };
+}
+
+/* ══════════════════════════════════════════
+   MAIN RUN
+══════════════════════════════════════════ */
+async function run() {
+  if (busy) return;
+  const html = document.getElementById('htmlInput').value.trim();
+  if (!html || html.length < 100) {
+    setStatus('Cole o HTML da página no campo (passo 2) antes de continuar.', 'error');
+    return;
+  }
+
+  busy = true;
+  setBusy(true);
+  clearResults();
+
+  try {
+    setStatus('🔬 Extraindo dados do produto...', 'active');
+    const pageUrl = document.getElementById('productUrl').value.trim() || 'https://unknown.com';
+    const { title, description, images: auto } = parseProductData(html, pageUrl);
+
+    const manual = parseManualUrls(document.getElementById('imgUrlsInput').value);
+    foundImages = manual.length > 0 ? manual : auto;
+
+    showInfoBox(title, description.length, foundImages.length, manual.length > 0);
+
+    const modelLabel = currentProvider === 'openai' ? 'GPT-4o' : 'Claude';
+    setStatus('🤖 Gerando conteúdo SEO com ' + modelLabel + '...', 'active');
+
+    const customInstr = document.getElementById('instrInput').value;
+    const raw = await callAI(title, description, customInstr);
+    const seo = parseSEO(raw);
+
+    renderResults(seo);
+    renderImages(foundImages);
+
+    setStatus('✅ Concluído com sucesso!', 'success');
+    document.getElementById('resetBtn').style.display = 'block';
+    document.getElementById('runBtn').classList.remove('pulse');
+
+  } catch(e) {
+    const msg = e.message === 'RATE_LIMIT'
+      ? '⚠️ Limite de uso atingido. Aguarde alguns minutos e tente novamente.'
+      : '✗ ' + (e.message || 'Erro inesperado.');
+    setStatus(msg, 'error');
+    document.getElementById('resetBtn').style.display = 'block';
+  } finally {
+    busy = false;
+    setBusy(false);
+  }
+}
+
+/* ══════════════════════════════════════════
+   UI HELPERS
+══════════════════════════════════════════ */
+function setBusy(b) {
+  const btn  = document.getElementById('runBtn');
+  const spin = document.getElementById('btnSpinner');
+  const txt  = document.getElementById('btnText');
+  btn.disabled = b;
+  spin.style.display = b ? 'inline-block' : 'none';
+  txt.textContent = b ? 'Processando...' : '◆ Extrair e Gerar SEO';
+  ['sk1','sk2','sk3'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    if (b) { el.classList.add('show'); el.style.animationDelay = (i*.15)+'s'; }
+    else el.classList.remove('show');
+  });
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.className = 'status' + (type ? ' ' + type : '');
+  el.textContent = msg;
+}
+
+function showInfoBox(title, descLen, imgCount, isManual) {
+  const el = document.getElementById('infoBox');
+  el.style.display = 'block';
+  document.getElementById('infoTitle').textContent = (title||'não encontrado').slice(0,65);
+  document.getElementById('infoDesc').textContent  = descLen + ' car.';
+  document.getElementById('infoImgs').textContent  = imgCount + (isManual ? ' ✓ manuais' : ' auto-detectadas');
+}
+
+function clearResults() {
+  document.getElementById('emptyState').style.display = 'none';
+  ['cardTitulo','cardDescricao','cardTags','cardCategoria'].forEach(id => {
+    document.getElementById(id).classList.remove('show');
+  });
+  document.getElementById('imagesSection').classList.remove('show');
+  document.getElementById('imagesGrid').innerHTML = '';
+}
+
+/* ══════════════════════════════════════════
+   RENDER RESULTS
+══════════════════════════════════════════ */
+function renderResults(seo) {
+  ['sk1','sk2','sk3'].forEach(id => document.getElementById(id).classList.remove('show'));
+
+  // Título
+  document.getElementById('tituloText').textContent = seo.titulo;
+  updateCharBadge(seo.titulo.length);
+  document.getElementById('cardTitulo').classList.add('show');
+
+  // Descrição
+  const descHtml = escHtml(seo.descricao)
+    .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#e8c96a;font-weight:600">$1</strong>')
+    .replace(/^- /gm, '<span style="color:#c9a84c;margin-right:.35rem">▸</span>');
+  document.getElementById('descricaoText').innerHTML = descHtml;
+  document.getElementById('cardDescricao').classList.add('show');
+
+  // Tags
+  const tagList = seo.tags.split(',').map(t => t.trim()).filter(Boolean);
+  document.getElementById('tagsRaw').textContent = tagList.join(', ');
+  const tw = document.getElementById('tagsWrap');
+  tw.innerHTML = '';
+  tagList.forEach(t => {
+    const span = document.createElement('span');
+    span.className = 'tag'; span.textContent = t; tw.appendChild(span);
+  });
+  document.getElementById('cardTags').classList.add('show');
+
+  // Categoria
+  document.getElementById('categoriaText').textContent = '◈ ' + seo.categoria;
+  document.getElementById('cardCategoria').classList.add('show');
+}
+
+function updateCharBadge(n) {
+  const el = document.getElementById('charBadge');
+  const ok = n >= 50 && n <= 60;
+  el.textContent = n + ' car.';
+  el.className = 'char-badge ' + (ok ? 'ok' : 'bad');
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ══════════════════════════════════════════
+   RENDER IMAGES
+══════════════════════════════════════════ */
+function renderImages(images) {
+  if (!images.length) return;
+  const section = document.getElementById('imagesSection');
+  const grid    = document.getElementById('imagesGrid');
+  const count   = document.getElementById('imagesCount');
+  const isManual = document.getElementById('imgUrlsInput').value.trim().length > 0;
+
+  count.textContent = images.length + ' imagem(ns) • ' + (isManual ? 'URLs manuais ✓' : 'detecção automática');
+  grid.innerHTML = '';
+
+  images.forEach((url, i) => {
+    const fn = suggestFname(url, i);
+    const card = document.createElement('div');
+    card.className = 'img-card';
+    card.style.animationDelay = (i * 0.04) + 's';
+    card.innerHTML =
+      '<div class="img-thumb" onclick="window.open(\'' + escAttr(url) + '\',\'_blank\')">' +
+        '<img src="' + escAttr(url) + '" alt="" loading="lazy" onerror="this.parentElement.innerHTML=\'<span style=&quot;font-size:.6rem;color:#606060&quot;>Sem preview</span>\'" ' +
+          'onmouseover="this.style.transform=\'scale(1.07)\'" onmouseout="this.style.transform=\'\'">' +
+      '</div>' +
+      '<div class="img-info">' +
+        '<div class="img-fname" title="' + escAttr(fn) + '">' + escHtml(fn) + '</div>' +
+        '<button class="btn-dl-one" onclick="dlOne(\'' + escAttr(url) + '\',\'' + escAttr(fn) + '\')">⬇ Baixar</button>' +
+      '</div>';
+    grid.appendChild(card);
+  });
+
+  section.classList.add('show');
+}
+
+function suggestFname(url, i) {
+  try {
+    const parts = new URL(url).pathname.split('/').filter(Boolean);
+    const last = parts[parts.length-1] || '';
+    return last.replace(/[^a-zA-Z0-9._-]/g,'-').slice(0,50) || ('produto-'+(i+1)+'.jpg');
+  } catch { return 'produto-'+(i+1)+'.jpg'; }
+}
+
+function escAttr(str) {
+  return str.replace(/'/g,'%27').replace(/"/g,'%22');
+}
+
+/* ══════════════════════════════════════════
+   COPY
+══════════════════════════════════════════ */
+function copyCard(id, btn) {
+  const el = document.getElementById(id);
+  const text = el.innerText || el.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copiado ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+/* ══════════════════════════════════════════
+   DOWNLOAD
+══════════════════════════════════════════ */
+async function dlOne(url, filename) {
+  try {
+    const res = await fetch(url, { mode: 'cors' });
+    if (!res.ok) throw new Error();
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } catch { window.open(url, '_blank'); }
+}
+
+async function dlAll() {
+  for (let i = 0; i < foundImages.length; i++) {
+    await dlOne(foundImages[i], suggestFname(foundImages[i], i));
+    await new Promise(r => setTimeout(r, 350));
+  }
+}
+
+/* ══════════════════════════════════════════
+   RESET
+══════════════════════════════════════════ */
+function resetAll() {
+  document.getElementById('productUrl').value   = '';
+  document.getElementById('htmlInput').value    = '';
+  document.getElementById('imgUrlsInput').value = '';
+  document.getElementById('htmlCount').style.display   = 'none';
+  document.getElementById('imgUrlCount').style.display = 'none';
+  document.getElementById('infoBox').style.display     = 'none';
+  document.getElementById('resetBtn').style.display    = 'none';
+  document.getElementById('emptyState').style.display  = 'block';
+  clearResults();
+  foundImages = [];
+  setStatus('⟡ Preencha os campos para começar.', '');
+  document.getElementById('runBtn').classList.add('pulse');
+  document.getElementById('productUrl').focus();
+}
+</script>
+</body>
+</html>
