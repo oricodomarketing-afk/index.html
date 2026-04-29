@@ -251,15 +251,15 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
       <button class="instr-toggle" id="instrToggle" onclick="toggleInstr()">
         <span id="instrToggleLabel">
           <span id="instrDot" style="color:var(--text3);margin-right:.35rem">✦</span>
-          Instruções para a descrição
+          Minhas instruções para a IA
         </span>
         <span id="instrArrow" style="font-size:.65rem;color:var(--text3)">▼</span>
       </button>
       <div class="instr-panel" id="instrPanel">
         <div class="instr-hint">
-          Escreva exatamente como quer a descrição. Exemplo:<br>
-          <em>"Faça uma descrição com até 600 caracteres. Depois liste em tópicos: Cor, Material, Dimensões, Garantia."</em><br>
-          Deixe vazio para usar o formato padrão.
+          Escreva exatamente como quer a descrição gerada. Essas instruções são enviadas diretamente para a IA.<br><br>
+          <em>Exemplo: "Faça uma descrição comercial com até 500 caracteres. Depois liste em tópicos separados: Cor, Material, Dimensões, Cuidados, Garantia."</em><br><br>
+          <strong style="color:var(--gold)">Se deixar vazio, a IA decide a estrutura livremente.</strong>
         </div>
         <textarea id="instrInput" rows="6"
           placeholder="Exemplo:&#10;Faça uma descrição comercial com até 600 caracteres.&#10;&#10;Depois, em tópicos separados:&#10;- Cor:&#10;- Material:&#10;- Dimensões:&#10;- Cuidados:&#10;- Garantia:"
@@ -601,29 +601,12 @@ function buildPrompt(title, description, customInstructions) {
   ].join('\n');
 
   const descBlock = (customInstructions && customInstructions.trim())
-    ? 'INSTRUÇÕES PERSONALIZADAS PARA A DESCRIÇÃO (siga à risca):\n' + customInstructions.trim()
-    : [
-        'INSTRUÇÕES PARA A DESCRIÇÃO:',
-        '**A Essência da Peça**',
-        'Dois parágrafos persuasivos sobre benefícios emocionais. Mínimo 150 palavras.',
-        '',
-        '**Dicas de Styling**',
-        'Um parágrafo sobre como e quando usar. Mínimo 50 palavras.',
-        '',
-        '**Especificações Técnicas**',
-        'Bullet points apenas com dados confirmados:',
-        '- Banho:',
-        '- Material:',
-        '- Pedra/Zircônia:',
-        '- Medidas:',
-        '- Peso:',
-        '- Hipoalergênico:',
-        '- Garantia:',
-      ].join('\n');
+    ? 'INSTRUÇÕES PARA A DESCRIÇÃO (siga à risca):\n' + customInstructions.trim()
+    : '';
 
   const descPlaceholder = (customInstructions && customInstructions.trim())
-    ? '(siga as instruções personalizadas acima)'
-    : 'Siga o formato de blocos especificado acima.';
+    ? '(siga as instruções acima)'
+    : '(sem instruções específicas — use seu melhor julgamento para estruturar a descrição)';
 
   const format = [
     'RETORNE EXATAMENTE neste formato sem texto adicional:',
